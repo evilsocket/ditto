@@ -106,6 +106,8 @@ func main() {
 
 	queue.WaitDone()
 
+	progress.Finish()
+
 	fmt.Printf("\n\n")
 
 	for _, entry := range entries {
