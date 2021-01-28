@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/evilsocket/islazy/async"
+	pb "github.com/cheggaaa/pb/v3"
 	"github.com/evilsocket/islazy/tui"
 	"github.com/haccer/available"
 	tld "github.com/jpillora/go-tld"
@@ -18,6 +19,7 @@ var (
 	limit     = 0
 	entries   = make([]*Entry, 0)
 	queue     = async.NewQueue(0, processEntry)
+	progress  = (* pb.ProgressBar)(nil)
 	availOnly = false
 	regOnly   = false
 	liveOnly  = false
@@ -52,6 +54,8 @@ func genEntries(parsed *tld.URL) {
 }
 
 func processEntry(arg async.Job) {
+	defer progress.Increment()
+
 	entry := arg.(*Entry)
 	entry.Available = available.Domain(entry.Domain)
 	entry.Ascii, _ = idna.ToASCII(entry.Domain)
@@ -94,11 +98,15 @@ func main() {
 
 	fmt.Printf("checking %d variations for '%s.%s', please wait ...\n\n", len(entries), parsed.Domain, parsed.TLD)
 
+	progress = pb.StartNew(len(entries))
+
 	for _, entry := range entries {
 		queue.Add(async.Job(entry))
 	}
 
 	queue.WaitDone()
+
+	fmt.Printf("\n\n")
 
 	for _, entry := range entries {
 		if entry.Available {
