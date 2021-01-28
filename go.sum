@@ -15,10 +15,12 @@ github.com/evilsocket/islazy v1.10.6 h1:MFq000a1ByoumoJWlytqg0qon0KlBeUfPsDjY0hK
 github.com/evilsocket/islazy v1.10.6/go.mod h1:OrwQGYg3DuZvXUfmH+KIZDjwTCbrjy48T24TUpGqVVw=
 github.com/fatih/color v1.7.0 h1:DkWD4oS2D8LGGgTQ6IvwJJXSL5Vp2ffcQg58nFV38Ys=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
-github.com/haccer/available v0.0.0-20200921032034-0d552efb6cd4 h1:MxQoqqy0scTAXWDH36lXAbRWbr3t8+e/aCmxvzTxlpQ=
-github.com/haccer/available v0.0.0-20200921032034-0d552efb6cd4/go.mod h1:CvVDzx8GCt0H9avR2A0NnFViM9QhXQghxKnZaosoaSU=
 github.com/jpillora/go-tld v1.1.1 h1:P1ZwtKDHBYYUl235R/D64cdBARfGYzEy1Hg2Ikir3FQ=
 github.com/jpillora/go-tld v1.1.1/go.mod h1:kitBxOF//DR5FxYeIGw+etdiiTIq5S7bx0dwy1GUNAk=
+github.com/likexian/gokit v0.23.3 h1:1klD04/osK9b16Q9sNEChOOim6oDa14fEuv1JL8yzU4=
+github.com/likexian/gokit v0.23.3/go.mod h1:/asXq96N3H5gVxyfyNuQO7HFoSorzcU+ZMEImyBGZB8=
+github.com/likexian/whois-parser-go v1.15.2 h1:132qACv2kBoWSHMWs6M09pnZd47kn/Pm4ViRod1xtI8=
+github.com/likexian/whois-parser-go v1.15.2/go.mod h1:zbLK4/FJW/zO2K5wZmHe+Fu6q5JygxJg+cQkYPA3nNI=
 github.com/mattn/go-colorable v0.1.2/go.mod h1:U0ppj6V5qS13XJ6of8GYAs25YV2eR4EVcfRqFIhoBtE=
 github.com/mattn/go-isatty v0.0.8/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hdxcsrc5s=
 github.com/mattn/go-isatty v0.0.12/go.mod h1:cbi8OIDigv2wuxKPP5vlRcQ1OAZbq2CE4Kysco4FUpU=
@@ -44,6 +46,7 @@ golang.org/x/net v0.0.0-20190923162816-aa69164e4478/go.mod h1:z5CRVTTTmAJ677TzLL
 golang.org/x/net v0.0.0-20200202094626-16171245cfb2/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=
 golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e/go.mod h1:qpuaurCH72eLCgpAm/N6yyVIVM9cpaDIP3A8BGJEC5A=
 golang.org/x/net v0.0.0-20200707034311-ab3426394381/go.mod h1:/O7V0waA8r7cgGh81Ro3o1hOxt32SMVPicZroKQ2sZA=
+golang.org/x/net v0.0.0-20200822124328-c89045814202/go.mod h1:/O7V0waA8r7cgGh81Ro3o1hOxt32SMVPicZroKQ2sZA=
 golang.org/x/net v0.0.0-20201024042810-be3efd7ff127 h1:pZPp9+iYUqwYKLjht0SDBbRCRK/9gAXDy7pz5fRDpjo=
 golang.org/x/net v0.0.0-20201024042810-be3efd7ff127/go.mod h1:sp8m0HH+o8qH0wwXwYZr8TS3Oi6o0r6Gce1SSxlDquU=
 golang.org/x/sync v0.0.0-20190423024810-112230192c58/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=

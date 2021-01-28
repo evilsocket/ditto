@@ -14,6 +14,22 @@ Then:
 
     ditto -domain facebook.com
 
+Only show available domains:
+
+    ditto -domain facebook.com -available
+
+Only show registered domains:
+
+    ditto -domain facebook.com -registered
+
+Only show registered domains that resolve to an IP:
+    
+    ditto -domain facebook.com -live
+
+Show WHOIS information:
+
+    ditto -domain facebook.com -live -whois
+
 For more options:
     
     ditto -help
