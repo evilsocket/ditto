@@ -90,11 +90,11 @@ func main() {
 
 	genEntries(parsed)
 
+	fmt.Printf("checking %d variations for '%s.%s', please wait ...\n\n", len(entries), parsed.Domain, parsed.TLD)
+
 	for _, entry := range entries {
 		queue.Add(async.Job(entry))
 	}
-
-	fmt.Printf("checking %d variations for '%s.%s', please wait ...\n\n", len(entries), parsed.Domain, parsed.TLD)
 
 	queue.WaitDone()
 
