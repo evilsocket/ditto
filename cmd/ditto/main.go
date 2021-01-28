@@ -20,6 +20,7 @@ var (
 	queue     = async.NewQueue(0, processEntry)
 	availOnly = false
 	regOnly   = false
+	liveOnly  = false
 )
 
 func die(format string, a ...interface{}) {
@@ -32,6 +33,7 @@ func init() {
 	flag.IntVar(&limit, "limit", limit, "Limit the number of permutations.")
 	flag.BoolVar(&availOnly, "available", availOnly, "Only display available domain names.")
 	flag.BoolVar(&regOnly, "registered", regOnly, "Only display registered domain names.")
+	flag.BoolVar(&liveOnly, "live", liveOnly, "Only display registered domain names that also resolve to an IP.")
 }
 
 func genEntries(parsed *tld.URL) {
@@ -100,16 +102,18 @@ func main() {
 
 	for _, entry := range entries {
 		if entry.Available {
-			if !regOnly {
+			if !regOnly && !liveOnly {
 				fmt.Printf("%s (%s) : %s\n", entry.Domain, entry.Ascii, tui.Green("available"))
 			}
 		} else {
 			if !availOnly {
 				if len(entry.Addresses) == 0 {
-					fmt.Printf("%s (%s) %s\n",
-						entry.Domain,
-						entry.Ascii,
-						tui.Red("registered"))
+					if !liveOnly {
+						fmt.Printf("%s (%s) %s\n",
+							entry.Domain,
+							entry.Ascii,
+							tui.Red("registered"))
+					}
 				} else {
 					fmt.Printf("%s (%s) %s : %s %s\n",
 						entry.Domain,
