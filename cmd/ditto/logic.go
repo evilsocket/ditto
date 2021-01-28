@@ -41,6 +41,10 @@ func isAvailable(domain string) (bool, *whoisparser.WhoisInfo) {
 		return true, nil
 	}
 
+	if parsed.Domain == nil || parsed.Domain.CreatedDate == "" {
+		return true, nil
+	}
+
 	return false, &parsed
 }
 

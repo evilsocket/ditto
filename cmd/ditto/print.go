@@ -53,6 +53,8 @@ func printEntry(entry *Entry) {
 					for _, field := range whoisFields {
 						fmt.Printf("  %s\n", field)
 					}
+					// raw, _ := json.MarshalIndent(entry.Whois, "", " ")
+					// fmt.Printf("%s\n", string(raw))
 				}
 			}
 		}
