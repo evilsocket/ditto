@@ -142,11 +142,16 @@ func printEntry(entry *Entry) {
 			}
 
 			if isLive || !liveOnly {
-				fmt.Printf("%s (%s) %s : %s\n",
+				fmt.Printf("%s (%s) %s",
 					entry.Domain,
 					entry.Ascii,
-					tui.Red("registered"),
-					strings.Join(mainFields, " "))
+					tui.Red("registered"))
+
+				if len(mainFields) > 0 {
+					fmt.Printf(" : %s", strings.Join(mainFields, " "))
+				}
+
+				fmt.Println()
 
 				if whoisInfo && len(whoisFields) > 0 {
 					for _, field := range whoisFields {
