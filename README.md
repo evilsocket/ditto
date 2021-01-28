@@ -16,7 +16,7 @@ Then:
 
 For more options:
     
-    uro -help
+    ditto -help
 
 ## License
 
