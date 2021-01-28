@@ -30,6 +30,10 @@ Show WHOIS information:
 
     ditto -domain facebook.com -live -whois
 
+Save to CSV file with extended WHOIS information:
+
+    ditto -domain facebook.com -whois -csv output.csv
+
 For more options:
     
     ditto -help
