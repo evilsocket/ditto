@@ -1,5 +1,4 @@
-Ditto is a small tool that accepts a domain name as input and generates all its variants for an [homograph attack]
-(https://en.wikipedia.org/wiki/IDN_homograph_attack) as output, checking which ones are available and which are already registered.
+Ditto is a small tool that accepts a domain name as input and generates all its variants for an [homograph attack](https://en.wikipedia.org/wiki/IDN_homograph_attack) as output, checking which ones are available and which are already registered.
 
 **Work in progress**
 
