@@ -26,8 +26,11 @@ var (
 	url         = "https://www.ice.gov"
 	limit       = 0
 	entries     = make([]*Entry, 0)
-	queue       = async.NewQueue(0, processEntry)
+	queue       = async.NewQueue(1, processEntry)
+	throttle    = 500
+	numWorkers  = 1
 	progress    = (* pb.ProgressBar)(nil)
+	mutateTLD   = false
 	availOnly   = false
 	regOnly     = false
 	liveOnly    = false
@@ -44,6 +47,9 @@ func init() {
 	flag.StringVar(&aString, "string", aString, "Generate variations of a string.")
 	flag.StringVar(&url, "domain", url, "Domain name or url.")
 	flag.IntVar(&limit, "limit", limit, "Limit the number of permutations.")
+	flag.IntVar(&throttle, "throttle", throttle, "Throttle requests by a given amount of milliseconds.")
+	flag.IntVar(&numWorkers, "workers", numWorkers, "Number of concurrent workers, set to 0 to use one per logical CPU core.")
+	flag.BoolVar(&mutateTLD, "tld", mutateTLD, "Try different permutations by replacing the TLD.")
 	flag.BoolVar(&availOnly, "available", availOnly, "Only display available domain names.")
 	flag.BoolVar(&regOnly, "registered", regOnly, "Only display registered domain names.")
 	flag.BoolVar(&liveOnly, "live", liveOnly, "Only display registered domain names that also resolve to an IP.")
@@ -57,7 +63,7 @@ func main() {
 	if aString != "" {
 		for _, perm := range genEntriesForString(aString) {
 			ascii, err := idna.ToASCII(perm)
-			if err != nil{
+			if err != nil {
 				ascii = err.Error()
 			}
 
@@ -79,7 +85,13 @@ func main() {
 		die("could not parse %s\n", url)
 	}
 
-	genEntries(parsed)
+	if mutateTLD {
+		generateTLDPermutations(parsed)
+	} else {
+		generateHomographPermutations(parsed)
+	}
+
+	queue  = async.NewQueue(numWorkers, processEntry)
 
 	fmt.Printf("checking %d variations for '%s.%s', please wait ...\n\n", len(entries), parsed.Domain, parsed.TLD)
 

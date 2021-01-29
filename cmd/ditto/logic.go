@@ -8,6 +8,7 @@ import (
 	whoisparser "github.com/likexian/whois-parser-go"
 	"golang.org/x/net/idna"
 	"net"
+	"time"
 )
 
 func genEntriesForString(s string) []string{
@@ -27,8 +28,22 @@ func genEntriesForString(s string) []string{
 	return permutations
 }
 
+func generateTLDPermutations(parsed *tld.URL) {
+	entries = make([]*Entry, 0)
+	for _, tld := range TLDs {
+		if tld != parsed.TLD {
+			entries = append(entries, &Entry{
+				Domain: fmt.Sprintf("%s.%s", parsed.Domain, tld),
+			})
+			if limit > 0 && len(entries) == limit {
+				return
+			}
+		}
+	}
+}
 
-func genEntries(parsed *tld.URL) {
+func generateHomographPermutations(parsed *tld.URL) {
+	entries = make([]*Entry, 0)
 	for i, c := range parsed.Domain {
 		if substitutes, found := dictionary[c]; found {
 			for _, sub := range substitutes {
@@ -68,6 +83,9 @@ func isAvailable(domain string) (bool, *whoisparser.WhoisInfo) {
 
 func processEntry(arg async.Job) {
 	defer progress.Increment()
+
+	// don't kill WHOIS servers and DNS resolvers
+	time.Sleep(time.Duration(throttle) * time.Millisecond)
 
 	entry := arg.(*Entry)
 	entry.Available, entry.Whois = isAvailable(entry.Domain)

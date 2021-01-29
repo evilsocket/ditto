@@ -4,7 +4,7 @@ Ditto is a small tool that accepts a domain name as input and generates all its 
 
 The [image on docker hub](https://hub.docker.com/r/evilsocket/ditto) is updated on every push, you can just:
 
-    docker run evilsocket/ditto:latest -h
+    docker run evilsocket/ditto -h
 
 ## Compiling from sources
 
@@ -22,6 +22,15 @@ To only transform a string:
 For a domain:
 
     ditto -domain facebook.com
+
+Use more concurrent workers to increase speed (WARNING: might cause a temporary IP ban from the WHOIS servers):
+
+    ditto -workers 4 -domain facebook.com
+
+If instead of mutating the domain name you want to check other TLDs (throttle is set to 1s in order to avoid being 
+blocked by WHOIS servers due to the many requests in a short timeframe):
+
+    ditto -domain facebook.com -tld -throttle 1000 -limit 100
 
 Only show available domains:
 

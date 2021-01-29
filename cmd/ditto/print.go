@@ -6,10 +6,17 @@ import (
 	"strings"
 )
 
+func asString(entry *Entry) string {
+	if entry.Domain != entry.Ascii {
+		return fmt.Sprintf("%s (%s)", entry.Domain, entry.Ascii)
+	}
+	return entry.Domain
+}
+
 func printEntry(entry *Entry) {
 	if entry.Available {
 		if !regOnly && !liveOnly {
-			fmt.Printf("%s (%s) : %s\n", entry.Domain, entry.Ascii, tui.Green("available"))
+			fmt.Printf("%s : %s\n", asString(entry), tui.Green("available"))
 		}
 	} else {
 		if !availOnly {
@@ -38,9 +45,8 @@ func printEntry(entry *Entry) {
 			}
 
 			if isLive || !liveOnly {
-				fmt.Printf("%s (%s) %s",
-					entry.Domain,
-					entry.Ascii,
+				fmt.Printf("%s %s",
+					asString(entry),
 					tui.Red("registered"))
 
 				if len(mainFields) > 0 {
