@@ -62,11 +62,11 @@ The same but also keep and store the changes as JSON files:
 
     ditto -domain facebook.com -monitor 1h -changes /some/path -keep-changes
 
-Execute a command if changes have been detected (see example send-email-report.sh in this repo):
+Execute a command if changes have been detected (see example send-email-report.sh in this repo, automatically added to the docker image):
 
         ditto -domain facebook.com \
               -monitor 1h \
-              -trigger "/path/to/send-email-report.sh {{.Domain}} {.ChangesFile}}"
+              -trigger "/usr/bin/send-email-report.sh {{.Domain}} {{.ChangesFile}} your@email.com"
 
 For more options:
     

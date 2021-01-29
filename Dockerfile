@@ -19,5 +19,6 @@ WORKDIR /root/
 
 # copy the prebuilt binary from the builder stage
 COPY --from=builder /app/_build/ditto .
+COPY --from=builder /app/send-email-report.sh /usr/bin/
 
 ENTRYPOINT ["./ditto"]
