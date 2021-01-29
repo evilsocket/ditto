@@ -10,6 +10,24 @@ import (
 	"net"
 )
 
+func genEntriesForString(s string) []string{
+	permutations := []string{}
+
+	for i, c := range s {
+		if substitutes, found := dictionary[c]; found {
+			for _, sub := range substitutes {
+				permutations = append(permutations, s[:i] + sub + s[i+1:])
+				if limit > 0 && len(permutations) == limit {
+					return permutations
+				}
+			}
+		}
+	}
+
+	return permutations
+}
+
+
 func genEntries(parsed *tld.URL) {
 	for i, c := range parsed.Domain {
 		if substitutes, found := dictionary[c]; found {

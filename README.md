@@ -10,7 +10,11 @@ will install the binary in $GOPATH/bin):
     # make sure go modules are used
     GO111MODULE=on go get github.com/evilsocket/ditto/cmd/ditto
 
-Then:
+To only transform a string:
+
+    ditto -string google
+
+For a domain:
 
     ditto -domain facebook.com
 

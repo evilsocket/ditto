@@ -7,6 +7,7 @@ import (
 	"github.com/evilsocket/islazy/async"
 	tld "github.com/jpillora/go-tld"
 	"github.com/likexian/whois-parser-go"
+	"golang.org/x/net/idna"
 	"os"
 	"strings"
 )
@@ -21,6 +22,7 @@ type Entry struct {
 }
 
 var (
+	aString     = ""
 	url         = "https://www.ice.gov"
 	limit       = 0
 	entries     = make([]*Entry, 0)
@@ -39,6 +41,7 @@ func die(format string, a ...interface{}) {
 }
 
 func init() {
+	flag.StringVar(&aString, "string", aString, "Generate variations of a string.")
 	flag.StringVar(&url, "domain", url, "Domain name or url.")
 	flag.IntVar(&limit, "limit", limit, "Limit the number of permutations.")
 	flag.BoolVar(&availOnly, "available", availOnly, "Only display available domain names.")
@@ -50,6 +53,19 @@ func init() {
 
 func main() {
 	flag.Parse()
+
+	if aString != "" {
+		for _, perm := range genEntriesForString(aString) {
+			ascii, err := idna.ToASCII(perm)
+			if err != nil{
+				ascii = err.Error()
+			}
+
+			fmt.Printf("%s (%s)\n", perm, ascii)
+		}
+
+		return
+	}
 
 	// the tld library requires the schema or it won't parse the domain ¯\_(ツ)_/¯
 	if !strings.Contains(url, "://") {
