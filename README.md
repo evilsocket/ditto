@@ -2,18 +2,18 @@ Ditto is a small tool that accepts a domain name as input and generates all its 
 
 **Work in progress**
 
-## Install
+## Using with Docker
 
-Compiling from sources (requires the go compiler, will install the binary in $GOPATH/bin):
+The image on docker hub is updated on every push, you can just:
+
+    docker run evilsocket/ditto:latest -h
+
+## Compiling from sources
+
+Compiling from sources requires the go compiler, this will install the binary in `$GOPATH/bin`:
 
     # make sure go modules are used
     GO111MODULE=on go get github.com/evilsocket/ditto/cmd/ditto
-
-Using docker:
-
-    cd /path/to/this/repo
-    docker build -t ditto:latest .
-    docker run ditto:latest -domain abc.com
 
 ## Usage
 

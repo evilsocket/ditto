@@ -14,7 +14,10 @@ _build:
 	@mkdir -p _build
 
 docker:
-	@docker build -t ditto:latest .
+	@docker build -t evilsocket/ditto:latest .
+
+docker_push: docker
+	@docker push evilsocket/ditto:latest
 
 clean:
 	@rm -rf _build
