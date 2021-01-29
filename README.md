@@ -2,13 +2,20 @@ Ditto is a small tool that accepts a domain name as input and generates all its 
 
 **Work in progress**
 
-## Usage
+## Install
 
-For the moment there are no binary releases and building from sources is the only way (requires the go compiler, 
-will install the binary in $GOPATH/bin):
+Compiling from sources (requires the go compiler, will install the binary in $GOPATH/bin):
 
     # make sure go modules are used
     GO111MODULE=on go get github.com/evilsocket/ditto/cmd/ditto
+
+Using docker:
+
+    cd /path/to/this/repo
+    docker build -t ditto:latest .
+    docker run ditto:latest -domain abc.com
+
+## Usage
 
 To only transform a string:
 
