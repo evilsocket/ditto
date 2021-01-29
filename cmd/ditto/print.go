@@ -66,3 +66,40 @@ func printEntry(entry *Entry) {
 		}
 	}
 }
+
+func printEntries() {
+	if !silent {
+		if testDataFile == "" {
+			progress.Finish()
+		}
+
+		if !quiet {
+			fmt.Printf("\n\n")
+			for _, entry := range entries {
+				printEntry(entry)
+			}
+		}
+	}
+}
+
+func printDeltas(deltas entryDeltas) {
+	numChangedEntries := len(deltas.Deltas)
+	if numChangedEntries > 0 {
+		// TODO: trigger logic
+
+		if !silent && !quiet {
+			fmt.Printf("\n\n")
+
+			plural := ""
+			if numChangedEntries > 1 {
+				plural = "s"
+			}
+
+			fmt.Printf("%s - %d record%s changed:\n\n", deltas.CheckedAt, numChangedEntries, plural)
+
+			for _, d := range deltas.Deltas {
+				printEntry(d.New)
+			}
+		}
+	}
+}

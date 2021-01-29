@@ -54,6 +54,20 @@ Save to CSV file with extended WHOIS information:
 
     ditto -domain facebook.com -whois -csv output.csv
 
+Keep running and monitoring for changes every hour:
+
+    ditto -domain facebook.com -monitor 1h
+
+The same but also keep and store the changes as JSON files:
+
+    ditto -domain facebook.com -monitor 1h -changes /some/path -keep-changes
+
+Execute a command if changes have been detected (see example send-email-report.sh in this repo):
+
+        ditto -domain facebook.com \
+              -monitor 1h \
+              -trigger "/path/to/send-email-report.sh {{.Domain}} {.ChangesFile}}"
+
 For more options:
     
     ditto -help

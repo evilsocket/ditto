@@ -1,23 +1,27 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/cheggaaa/pb/v3"
 	"github.com/domainr/whois"
 	"github.com/evilsocket/islazy/async"
 	"github.com/jpillora/go-tld"
 	whoisparser "github.com/likexian/whois-parser-go"
 	"golang.org/x/net/idna"
+	"io/ioutil"
 	"net"
+	"sort"
 	"time"
 )
 
-func genEntriesForString(s string) []string{
+func genEntriesForString(s string) []string {
 	permutations := []string{}
 
 	for i, c := range s {
 		if substitutes, found := dictionary[c]; found {
 			for _, sub := range substitutes {
-				permutations = append(permutations, s[:i] + sub + s[i+1:])
+				permutations = append(permutations, s[:i]+sub+s[i+1:])
 				if limit > 0 && len(permutations) == limit {
 					return permutations
 				}
@@ -30,10 +34,10 @@ func genEntriesForString(s string) []string{
 
 func generateTLDPermutations(parsed *tld.URL) {
 	entries = make([]*Entry, 0)
-	for _, tld := range TLDs {
-		if tld != parsed.TLD {
+	for _, otherTLD := range TLDs {
+		if otherTLD != parsed.TLD {
 			entries = append(entries, &Entry{
-				Domain: fmt.Sprintf("%s.%s", parsed.Domain, tld),
+				Domain: fmt.Sprintf("%s.%s", parsed.Domain, otherTLD),
 			})
 			if limit > 0 && len(entries) == limit {
 				return
@@ -109,5 +113,45 @@ func processEntry(arg async.Job) {
 		for name, _ := range uniq {
 			entry.Names = append(entry.Names, name)
 		}
+	}
+
+	sort.Strings(entry.Addresses)
+	sort.Strings(entry.Names)
+}
+
+func updateEntries(parsed *tld.URL) {
+	// deep copy entrieds
+	data, _ := json.Marshal(entries)
+	json.Unmarshal(data, &prevEntries)
+
+	if testDataFile != "" {
+		// load entries from file
+		if raw, err := ioutil.ReadFile(testDataFile); err != nil {
+			die("error reading %s: %v\n", testDataFile, err)
+		} else if err = json.Unmarshal(raw, &entries); err != nil {
+			die("error decoding %s: %v\n", testDataFile, err)
+		}
+	} else {
+		if mutateTLD {
+			// generate entries by replacing tld
+			generateTLDPermutations(parsed)
+		} else {
+			// generate entries by homograph attack
+			generateHomographPermutations(parsed)
+		}
+
+		queue = async.NewQueue(numWorkers, processEntry)
+
+		if !silent {
+			fmt.Printf("checking %d variations for '%s.%s', please wait ...\n\n", len(entries), parsed.Domain, parsed.TLD)
+
+			progress = pb.StartNew(len(entries))
+		}
+
+		for _, entry := range entries {
+			queue.Add(async.Job(entry))
+		}
+
+		queue.WaitDone()
 	}
 }

@@ -84,3 +84,12 @@ func csvSave() {
 
 	fmt.Printf("saved to %s\n", csvFileName)
 }
+
+func csvSaveIfNeeded() {
+	if csvFileName != "" {
+		if !silent {
+			fmt.Printf("\n\n")
+		}
+		csvSave()
+	}
+}

@@ -10,34 +10,44 @@ import (
 	"golang.org/x/net/idna"
 	"os"
 	"strings"
+	"time"
 )
 
 type Entry struct {
-	Domain    string
-	Ascii     string
-	Available bool
-	Whois     *whoisparser.WhoisInfo
-	Addresses []string
-	Names     []string
+	Domain    string                 `json:"domain"`
+	Ascii     string                 `json:"ascii"`
+	Available bool                   `json:"available"`
+	Whois     *whoisparser.WhoisInfo `json:"whois"`
+	Addresses []string               `json:"addresses"`
+	Names     []string               `json:"names"`
 }
 
 var (
-	aString     = ""
-	url         = "https://www.ice.gov"
-	limit       = 0
-	entries     = make([]*Entry, 0)
-	queue       = async.NewQueue(1, processEntry)
-	throttle    = 500
-	numWorkers  = 1
-	progress    = (* pb.ProgressBar)(nil)
-	quiet       = false
-	silent      = false
-	mutateTLD   = false
-	availOnly   = false
-	regOnly     = false
-	liveOnly    = false
-	whoisInfo   = false
-	csvFileName = ""
+	aString             = ""
+	url                 = ""
+	parsed              = (* tld.URL)(nil)
+	err                 = (error)(nil)
+	limit               = 0
+	entries             = []*Entry(nil)
+	prevEntries         = []*Entry(nil)
+	queue               = async.NewQueue(1, processEntry)
+	throttle            = 500
+	numWorkers          = 1
+	progress            = (* pb.ProgressBar)(nil)
+	quiet               = false
+	silent              = false
+	mutateTLD           = false
+	availOnly           = false
+	regOnly             = false
+	liveOnly            = false
+	whoisInfo           = false
+	csvFileName         = ""
+	testDataFile        = ""
+	monitorPeriodString = ""
+	monitorPeriod       = time.Duration(0)
+	monitorPath         = "/tmp"
+	keepChanges         = false
+	triggerCommand      = ""
 )
 
 func die(format string, a ...interface{}) {
@@ -59,6 +69,14 @@ func init() {
 	flag.BoolVar(&liveOnly, "live", liveOnly, "Only display registered domain names that also resolve to an IP.")
 	flag.BoolVar(&whoisInfo, "whois", whoisInfo, "Show whois information.")
 	flag.StringVar(&csvFileName, "csv", csvFileName, "If set ditto will save results to this CSV file.")
+
+	flag.StringVar(&testDataFile, "test-data", testDataFile, "Used for testing purposes, load test data from a JSON file.")
+
+	flag.StringVar(&monitorPeriodString, "monitor", monitorPeriodString, "If specified will monitor for changes with the specified period.")
+	flag.StringVar(&monitorPath, "changes", monitorPath, "Base path to save changes files into.")
+	flag.BoolVar(&keepChanges, "keep-changes", keepChanges, "Do not remove changes JSON files.")
+
+	flag.StringVar(&triggerCommand, "trigger", triggerCommand, "Command to run when in monitor mode and one or more domains changed.")
 }
 
 func main() {
@@ -73,8 +91,13 @@ func main() {
 
 			fmt.Printf("%s (%s)\n", perm, ascii)
 		}
-
 		return
+	}
+
+	if url == "" {
+		fmt.Printf("no -domain specified.\n\n")
+		flag.PrintDefaults()
+		os.Exit(1)
 	}
 
 	// the tld library requires the schema or it won't parse the domain ¯\_(ツ)_/¯
@@ -82,48 +105,34 @@ func main() {
 		url = fmt.Sprintf("https://%s", url)
 	}
 
-	parsed, err := tld.Parse(url)
+	parsed, err = tld.Parse(url)
 	if err != nil {
 		die("%v\n", err)
 	} else if parsed.Domain == "" {
 		die("could not parse %s\n", url)
 	}
 
-	if mutateTLD {
-		generateTLDPermutations(parsed)
-	} else {
-		generateHomographPermutations(parsed)
-	}
-
-	queue = async.NewQueue(numWorkers, processEntry)
-
-	if !silent {
-		fmt.Printf("checking %d variations for '%s.%s', please wait ...\n\n", len(entries), parsed.Domain, parsed.TLD)
-
-		progress = pb.StartNew(len(entries))
-	}
-
-	for _, entry := range entries {
-		queue.Add(async.Job(entry))
-	}
-
-	queue.WaitDone()
-
-	if !silent {
-		progress.Finish()
-		if !quiet {
-			fmt.Printf("\n\n")
-
-			for _, entry := range entries {
-				printEntry(entry)
-			}
+	if monitorPeriodString != "" {
+		if monitorPeriod, err = time.ParseDuration(monitorPeriodString); err != nil {
+			die("could not parse period '%s': %v\n", monitorPeriodString, err)
 		}
 	}
 
-	if csvFileName != "" {
-		if !silent {
-			fmt.Printf("\n\n")
+	for {
+		updateEntries(parsed)
+
+		if monitorPeriod == 0 || prevEntries == nil {
+			printEntries()
+		} else if monitorPeriod != 0 {
+			monitorDeltas()
 		}
-		csvSave()
+
+		csvSaveIfNeeded()
+
+		if monitorPeriod == 0 {
+			return
+		} else {
+			time.Sleep(monitorPeriod)
+		}
 	}
 }

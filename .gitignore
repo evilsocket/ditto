@@ -2,3 +2,4 @@ _build
 .DS_Store
 .idea
 dist
+test-entries.json
