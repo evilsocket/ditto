@@ -30,6 +30,8 @@ var (
 	throttle    = 500
 	numWorkers  = 1
 	progress    = (* pb.ProgressBar)(nil)
+	quiet       = false
+	silent      = false
 	mutateTLD   = false
 	availOnly   = false
 	regOnly     = false
@@ -49,6 +51,8 @@ func init() {
 	flag.IntVar(&limit, "limit", limit, "Limit the number of permutations.")
 	flag.IntVar(&throttle, "throttle", throttle, "Throttle requests by a given amount of milliseconds.")
 	flag.IntVar(&numWorkers, "workers", numWorkers, "Number of concurrent workers, set to 0 to use one per logical CPU core.")
+	flag.BoolVar(&quiet, "quiet", quiet, "Don't show results on terminal.")
+	flag.BoolVar(&silent, "silent", silent, "Suppress all terminal output.")
 	flag.BoolVar(&mutateTLD, "tld", mutateTLD, "Try different permutations by replacing the TLD.")
 	flag.BoolVar(&availOnly, "available", availOnly, "Only display available domain names.")
 	flag.BoolVar(&regOnly, "registered", regOnly, "Only display registered domain names.")
@@ -91,11 +95,13 @@ func main() {
 		generateHomographPermutations(parsed)
 	}
 
-	queue  = async.NewQueue(numWorkers, processEntry)
+	queue = async.NewQueue(numWorkers, processEntry)
 
-	fmt.Printf("checking %d variations for '%s.%s', please wait ...\n\n", len(entries), parsed.Domain, parsed.TLD)
+	if !silent {
+		fmt.Printf("checking %d variations for '%s.%s', please wait ...\n\n", len(entries), parsed.Domain, parsed.TLD)
 
-	progress = pb.StartNew(len(entries))
+		progress = pb.StartNew(len(entries))
+	}
 
 	for _, entry := range entries {
 		queue.Add(async.Job(entry))
@@ -103,16 +109,21 @@ func main() {
 
 	queue.WaitDone()
 
-	progress.Finish()
+	if !silent {
+		progress.Finish()
+		if !quiet {
+			fmt.Printf("\n\n")
 
-	fmt.Printf("\n\n")
-
-	for _, entry := range entries {
-		printEntry(entry)
+			for _, entry := range entries {
+				printEntry(entry)
+			}
+		}
 	}
 
 	if csvFileName != "" {
-		fmt.Printf("\n\n")
+		if !silent {
+			fmt.Printf("\n\n")
+		}
 		csvSave()
 	}
 }

@@ -82,7 +82,9 @@ func isAvailable(domain string) (bool, *whoisparser.WhoisInfo) {
 }
 
 func processEntry(arg async.Job) {
-	defer progress.Increment()
+	if !silent {
+		defer progress.Increment()
+	}
 
 	// don't kill WHOIS servers and DNS resolvers
 	time.Sleep(time.Duration(throttle) * time.Millisecond)
