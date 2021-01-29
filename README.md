@@ -1,10 +1,8 @@
 Ditto is a small tool that accepts a domain name as input and generates all its variants for an [homograph attack](https://en.wikipedia.org/wiki/IDN_homograph_attack) as output, checking which ones are available and which are already registered.
 
-**Work in progress**
-
 ## Using with Docker
 
-The image on docker hub is updated on every push, you can just:
+The [image on docker hub](https://hub.docker.com/r/evilsocket/ditto) is updated on every push, you can just:
 
     docker run evilsocket/ditto:latest -h
 
