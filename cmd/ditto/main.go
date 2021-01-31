@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	pb "github.com/cheggaaa/pb/v3"
@@ -8,7 +9,9 @@ import (
 	tld "github.com/jpillora/go-tld"
 	"github.com/likexian/whois-parser-go"
 	"golang.org/x/net/idna"
+	"io/ioutil"
 	"os"
+	"path"
 	"strings"
 	"time"
 )
@@ -120,6 +123,17 @@ func main() {
 
 	for {
 		updateEntries(parsed)
+
+		// if in monitor mode, it's the first run and we want to keep the changes ond disk
+		// save a file with the initial status of this domain
+		if monitorPeriod != 0 && prevEntries == nil && keepChanges {
+			fileName :=  path.Join(monitorPath, fmt.Sprintf("%s.%s.json", parsed.Domain, parsed.TLD))
+			if raw, err := json.Marshal(entries); err != nil {
+				die("can't encode entries: %v\n", err)
+			} else if err = ioutil.WriteFile(fileName, raw, os.ModePerm); err != nil {
+				die("error writing to %s: %v\n", fileName, raw)
+			}
+		}
 
 		if monitorPeriod == 0 || prevEntries == nil {
 			printEntries()

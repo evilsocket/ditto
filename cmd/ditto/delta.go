@@ -77,7 +77,9 @@ func monitorDeltas() {
 	if numChangedEntries > 0 {
 		printDeltas(deltas)
 
-		deltaFileName := path.Join(monitorPath, fmt.Sprintf("ditto_changes_%d.json", deltas.CheckedAt.Unix()))
+		// fmt.Sprintf("%s.%s.json", parsed.Domain, parsed.TLD)
+		fileName := fmt.Sprintf("%s.%s-changes-%d.json", parsed.Domain, parsed.TLD, deltas.CheckedAt.Unix())
+		deltaFileName := path.Join(monitorPath, fileName)
 		// do we need to dump the changes on file?
 		if keepChanges || triggerCommand != "" {
 			raw, err := json.MarshalIndent(deltas, "", "  ")
