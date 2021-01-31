@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/evilsocket/islazy/str"
+	whoisparser "github.com/likexian/whois-parser-go"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -24,6 +25,18 @@ type entryDelta struct {
 type entryDeltas struct {
 	CheckedAt time.Time    `json:"checked_at"`
 	Deltas    []entryDelta `json:"changes"`
+}
+
+// use json to avoid checking pointers and comparing
+// field by fielnd
+func sameWhois(a, b *whoisparser.WhoisInfo) bool {
+	if rawA, err := json.Marshal(a); err != nil {
+		return false
+	} else if rawB, err := json.Marshal(b); err != nil {
+		return false
+	} else {
+		return bytes.Equal(rawA, rawB)
+	}
 }
 
 func checkDeltas() entryDeltas {
@@ -53,7 +66,7 @@ func checkDeltas() entryDeltas {
 
 		}
 
-		if reflect.DeepEqual(prev.Whois, curr.Whois) == false {
+		if sameWhois(prev.Whois, curr.Whois) == false {
 			d.Changes = append(d.Changes, "whois")
 		}
 
