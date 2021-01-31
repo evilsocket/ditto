@@ -145,6 +145,9 @@ func updateEntries(parsed *tld.URL) {
 		if !silent {
 			fmt.Printf("checking %d variations for '%s.%s', please wait ...\n\n", len(entries), parsed.Domain, parsed.TLD)
 
+			if progress != nil {
+				progress.SetCurrent(0)
+			}
 			progress = pb.StartNew(len(entries))
 		}
 

@@ -74,9 +74,10 @@ func monitorDeltas() {
 	deltas := checkDeltas()
 
 	numChangedEntries := len(deltas.Deltas)
-	if numChangedEntries > 0 {
-		printDeltas(deltas)
 
+	printDeltas(deltas)
+
+	if numChangedEntries > 0 {
 		// fmt.Sprintf("%s.%s.json", parsed.Domain, parsed.TLD)
 		fileName := fmt.Sprintf("%s.%s-changes-%d.json", parsed.Domain, parsed.TLD, deltas.CheckedAt.Unix())
 		deltaFileName := path.Join(monitorPath, fileName)
