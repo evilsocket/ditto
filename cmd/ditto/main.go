@@ -51,6 +51,7 @@ var (
 	monitorPath         = "/tmp"
 	keepChanges         = false
 	triggerCommand      = ""
+	ignoreAddressChange = false
 )
 
 func die(format string, a ...interface{}) {
@@ -78,7 +79,7 @@ func init() {
 	flag.StringVar(&monitorPeriodString, "monitor", monitorPeriodString, "If specified will monitor for changes with the specified period.")
 	flag.StringVar(&monitorPath, "changes", monitorPath, "Base path to save changes files into.")
 	flag.BoolVar(&keepChanges, "keep-changes", keepChanges, "Do not remove changes JSON files.")
-
+	flag.BoolVar(&ignoreAddressChange, "ignore-ip-changes", ignoreAddressChange, "Do not trigger for IP address changes.")
 	flag.StringVar(&triggerCommand, "trigger", triggerCommand, "Command to run when in monitor mode and one or more domains changed.")
 }
 
@@ -127,7 +128,7 @@ func main() {
 		// if in monitor mode, it's the first run and we want to keep the changes ond disk
 		// save a file with the initial status of this domain
 		if monitorPeriod != 0 && prevEntries == nil && keepChanges {
-			fileName :=  path.Join(monitorPath, fmt.Sprintf("%s.%s.json", parsed.Domain, parsed.TLD))
+			fileName := path.Join(monitorPath, fmt.Sprintf("%s.%s.json", parsed.Domain, parsed.TLD))
 			if raw, err := json.Marshal(entries); err != nil {
 				die("can't encode entries: %v\n", err)
 			} else if err = ioutil.WriteFile(fileName, raw, os.ModePerm); err != nil {

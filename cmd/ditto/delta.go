@@ -58,7 +58,10 @@ func checkDeltas() entryDeltas {
 		}
 
 		if reflect.DeepEqual(prev.Addresses, curr.Addresses) == false {
-			d.Changes = append(d.Changes, "addresses")
+			// don't ignore if the domain just became available
+			if len(prev.Addresses) == 0 || !ignoreAddressChange {
+				d.Changes = append(d.Changes, "addresses")
+			}
 		}
 
 		if reflect.DeepEqual(prev.Names, curr.Names) == false {
