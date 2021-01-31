@@ -101,5 +101,7 @@ func printDeltas(deltas entryDeltas) {
 				printEntry(d.New)
 			}
 		}
+	} else if !silent && ! quiet {
+		fmt.Printf("no changes detected in the last %s\n", monitorPeriod)
 	}
 }
