@@ -151,18 +151,11 @@ func checkChanges() Event {
 		}
 
 		if reflect.DeepEqual(prev.Addresses, curr.Addresses) == false {
-			// don't ignore if there weren't any addresses before
-			if len(prev.Addresses) == 0 || !ignoreAddressChange {
-				d.Attributes = append(d.Attributes, "addresses")
-			}
+			d.Attributes = append(d.Attributes, "addresses")
 		}
 
 		if reflect.DeepEqual(prev.Names, curr.Names) == false {
-			// don't ignore if there weren't any names before
-			if len(prev.Names) == 0 || !ignoreNamesChange {
-				d.Attributes = append(d.Attributes, "names")
-			}
-
+			d.Attributes = append(d.Attributes, "names")
 		}
 
 		if changed, what := whoisCompare(prev.Whois, curr.Whois); changed {
@@ -204,32 +197,50 @@ func monitorDeltas() {
 		}
 
 		if triggerCommand != "" {
-			tpl, err := template.New("changes").Parse(triggerCommand)
-			if err != nil {
-				die("error parsing trigger command: %v\n", err)
+			doTrigger := false
+			for _, attrName := range deltas.Attributes() {
+				if attrName == "addresses"  {
+					doTrigger = !ignoreAddressChange
+				} else if attrName == "names" {
+					doTrigger = !ignoreNamesChange
+				} else {
+					doTrigger = true
+				}
+
+				if doTrigger {
+					break
+				}
 			}
 
-			var buf bytes.Buffer
+			if doTrigger {
+				fmt.Printf("running trigger ...")
+				tpl, err := template.New("changes").Parse(triggerCommand)
+				if err != nil {
+					die("error parsing trigger command: %v\n", err)
+				}
 
-			err = tpl.Execute(&buf, triggerData{
-				Domain:      parsed.Host,
-				ChangesFile: deltaFileName,
-			})
-			if err != nil {
-				die("error parsing trigger command: %v\n", err)
-			}
+				var buf bytes.Buffer
 
-			command := buf.String()
-			split := strings.Fields(command)
+				err = tpl.Execute(&buf, triggerData{
+					Domain:      parsed.Host,
+					ChangesFile: deltaFileName,
+				})
+				if err != nil {
+					die("error parsing trigger command: %v\n", err)
+				}
 
-			cmd := exec.Command(split[0], split[1:]...)
-			output, err := cmd.CombinedOutput()
-			if err != nil {
-				die("error running trigger command '%s': %v\n", command, err)
-			} else if len(output) > 0 && !silent {
-				fmt.Printf("%s\n", str.Trim(string(output)))
-			} else if !silent {
-				// fmt.Printf("trigger executed.")
+				command := buf.String()
+				split := strings.Fields(command)
+
+				cmd := exec.Command(split[0], split[1:]...)
+				output, err := cmd.CombinedOutput()
+				if err != nil {
+					die("error running trigger command '%s': %v\n", command, err)
+				} else if len(output) > 0 && !silent {
+					fmt.Printf("%s\n", str.Trim(string(output)))
+				} else if !silent {
+					// fmt.Printf("trigger executed.")
+				}
 			}
 		}
 
