@@ -120,9 +120,12 @@ func processEntry(arg async.Job) {
 }
 
 func updateEntries(parsed *tld.URL) {
-	// deep copy entrieds
-	data, _ := json.Marshal(entries)
-	json.Unmarshal(data, &prevEntries)
+	// deep copy entries
+	if data, err := json.Marshal(entries); err != nil {
+		die("error encoding entries: %v\n", err)
+	} else if err = json.Unmarshal(data, &prevEntries); err != nil {
+		die("error encoding prev entries: %v\n", err)
+	}
 
 	if testDataFile != "" {
 		// load entries from file

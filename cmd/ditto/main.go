@@ -1,29 +1,16 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	pb "github.com/cheggaaa/pb/v3"
 	"github.com/evilsocket/islazy/async"
 	tld "github.com/jpillora/go-tld"
-	"github.com/likexian/whois-parser-go"
 	"golang.org/x/net/idna"
-	"io/ioutil"
 	"os"
-	"path"
 	"strings"
 	"time"
 )
-
-type Entry struct {
-	Domain    string                 `json:"domain"`
-	Ascii     string                 `json:"ascii"`
-	Available bool                   `json:"available"`
-	Whois     *whoisparser.WhoisInfo `json:"whois"`
-	Addresses []string               `json:"addresses"`
-	Names     []string               `json:"names"`
-}
 
 var (
 	aString             = ""
@@ -31,8 +18,6 @@ var (
 	parsed              = (* tld.URL)(nil)
 	err                 = (error)(nil)
 	limit               = 0
-	entries             = []*Entry(nil)
-	prevEntries         = []*Entry(nil)
 	queue               = async.NewQueue(1, processEntry)
 	throttle            = 500
 	numWorkers          = 1
@@ -132,11 +117,8 @@ func main() {
 		// if in monitor mode, it's the first run and we want to keep the changes ond disk
 		// save a file with the initial status of this domain
 		if monitorPeriod != 0 && prevEntries == nil && keepChanges {
-			fileName := path.Join(monitorPath, fmt.Sprintf("%s.%s.json", parsed.Domain, parsed.TLD))
-			if raw, err := json.Marshal(entries); err != nil {
-				die("can't encode entries: %v\n", err)
-			} else if err = ioutil.WriteFile(fileName, raw, os.ModePerm); err != nil {
-				die("error writing to %s: %v\n", fileName, raw)
+			if err = saveState(); err != nil {
+				die("%s\n", err)
 			}
 		}
 
