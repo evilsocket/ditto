@@ -98,6 +98,21 @@ func contactCompare(a, b *whoisparser.Contact, prefix string) (bool, string) {
 	return false, ""
 }
 
+func fixArrays(d *whoisparser.Domain) {
+	if len(d.Status) == 0 && d.Status != nil {
+		d.Status = nil
+	}
+	if d.Status != nil {
+		sort.Strings(d.Status)
+	}
+	if len(d.NameServers) == 0 && d.NameServers != nil {
+		d.NameServers = nil
+	}
+	if d.NameServers != nil {
+		sort.Strings(d.NameServers)
+	}
+}
+
 func whoisCompare(a, b *whoisparser.WhoisInfo) (bool, string) {
 	if a == nil && b != nil {
 		return true, "whois"
@@ -112,6 +127,11 @@ func whoisCompare(a, b *whoisparser.WhoisInfo) (bool, string) {
 	} else if a.Domain != nil && b.Domain == nil {
 		return true, "whois.domain"
 	} else if a.Domain != nil && b.Domain != nil {
+		// since []string{} != nil for reflect.DeepEqual
+		// we need to normalize
+		fixArrays(a.Domain)
+		fixArrays(b.Domain)
+
 		if changed, field := structCompare(*a.Domain, *b.Domain); changed {
 			return true, fmt.Sprintf("whois.domain.%s", field)
 		}
