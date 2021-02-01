@@ -38,6 +38,7 @@ var (
 	triggerCommand      = ""
 	ignoreAddressChange = false
 	ignoreNamesChange   = false
+	noProgressBar       = false
 )
 
 func die(format string, a ...interface{}) {
@@ -70,6 +71,8 @@ func init() {
 	flag.BoolVar(&ignoreAddressChange, "ignore-ip-changes", ignoreAddressChange, "Do not trigger for IP address changes.")
 	flag.BoolVar(&ignoreNamesChange, "ignore-host-changes", ignoreNamesChange, "Do not trigger for hostname changes.")
 	flag.StringVar(&triggerCommand, "trigger", triggerCommand, "Command to run when in monitor mode and one or more domains changed.")
+
+	flag.BoolVar(&noProgressBar, "no-progress-bar", noProgressBar, "Do not show the progress bar.")
 }
 
 func main() {

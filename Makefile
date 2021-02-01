@@ -3,15 +3,15 @@ all: ditto
 ditto: _build
 	@go build -o _build/ditto cmd/ditto/*.go
 
-install: ditto
-	@cp _build/ditto /usr/bin/
-	@chmod a+x /usr/bin/ditto
-
 test:
 	@go test -short ./...
 
 _build:
 	@mkdir -p _build
+
+install:
+	@go install ./cmd/ditto
+	@cp service.sh $GOPATH/bin/ditto-service
 
 docker:
 	@docker build -t evilsocket/ditto:latest .

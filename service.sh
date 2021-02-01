@@ -10,4 +10,5 @@ ditto -domain "$1" \
    -keep-changes \
    -ignore-ip-changes \
    -ignore-host-changes \
+   -no-progress-bar \
    -trigger "/usr/bin/send-email-report.sh {{.Domain}} {{.ChangesFile}} $2"

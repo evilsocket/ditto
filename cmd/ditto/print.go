@@ -69,7 +69,7 @@ func printEntry(entry *Entry) {
 
 func printEntries() {
 	if !silent {
-		if testDataFile == "" {
+		if testDataFile == "" && !noProgressBar {
 			progress.Finish()
 		}
 
