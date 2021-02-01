@@ -11,20 +11,40 @@ import (
 	"os/exec"
 	"path"
 	"reflect"
+	"sort"
 	"strings"
 	"text/template"
 	"time"
 )
 
-type entryDelta struct {
-	Old     *Entry   `json:"before"`
-	New     *Entry   `json:"after"`
-	Changes []string `json:"changes"`
+type Change struct {
+	Attributes []string `json:"changes"`
+	Old        *Entry   `json:"before"`
+	New        *Entry   `json:"after"`
 }
 
-type entryDeltas struct {
-	CheckedAt time.Time    `json:"checked_at"`
-	Deltas    []entryDelta `json:"changes"`
+type Event struct {
+	CheckedAt time.Time `json:"checked_at"`
+	Changes   []Change  `json:"changes"`
+}
+
+func (e Event) Attributes() []string {
+	list := make([]string, 0)
+	uniq := make(map[string]bool, 0)
+
+	for _, c := range e.Changes {
+		for _, a := range c.Attributes {
+			uniq[a] = true
+		}
+	}
+
+	for a, _ := range uniq {
+		list = append(list, a)
+	}
+
+	sort.Strings(list)
+
+	return list
 }
 
 // use json to avoid checking pointers and comparing
@@ -39,8 +59,8 @@ func sameWhois(a, b *whoisparser.WhoisInfo) bool {
 	}
 }
 
-func checkDeltas() entryDeltas {
-	deltas := entryDeltas{
+func checkChanges() Event {
+	changeEvent := Event{
 		CheckedAt: time.Now(),
 	}
 
@@ -48,37 +68,40 @@ func checkDeltas() entryDeltas {
 	for i := range entries {
 		prev := prevEntries[i]
 		curr := entries[i]
-		d := entryDelta{
+		d := Change{
 			Old: prev,
 			New: curr,
 		}
 
 		if prev.Available != curr.Available {
-			d.Changes = append(d.Changes, "availability")
+			d.Attributes = append(d.Attributes, "availability")
 		}
 
 		if reflect.DeepEqual(prev.Addresses, curr.Addresses) == false {
-			// don't ignore if the domain just became available
+			// don't ignore if there weren't any addresses before
 			if len(prev.Addresses) == 0 || !ignoreAddressChange {
-				d.Changes = append(d.Changes, "addresses")
+				d.Attributes = append(d.Attributes, "addresses")
 			}
 		}
 
 		if reflect.DeepEqual(prev.Names, curr.Names) == false {
-			d.Changes = append(d.Changes, "names")
+			// don't ignore if there weren't any names before
+			if len(prev.Names) == 0 || !ignoreNamesChange {
+				d.Attributes = append(d.Attributes, "names")
+			}
 
 		}
 
 		if sameWhois(prev.Whois, curr.Whois) == false {
-			d.Changes = append(d.Changes, "whois")
+			d.Attributes = append(d.Attributes, "whois")
 		}
 
-		if len(d.Changes) > 0 {
-			deltas.Deltas = append(deltas.Deltas, d)
+		if len(d.Attributes) > 0 {
+			changeEvent.Changes = append(changeEvent.Changes, d)
 		}
 	}
 
-	return deltas
+	return changeEvent
 }
 
 type triggerData struct {
@@ -87,11 +110,11 @@ type triggerData struct {
 }
 
 func monitorDeltas() {
-	deltas := checkDeltas()
+	deltas := checkChanges()
 
-	numChangedEntries := len(deltas.Deltas)
+	numChangedEntries := len(deltas.Changes)
 
-	printDeltas(deltas)
+	printChanges(deltas)
 
 	if numChangedEntries > 0 {
 		// fmt.Sprintf("%s.%s.json", parsed.Domain, parsed.TLD)

@@ -52,6 +52,7 @@ var (
 	keepChanges         = false
 	triggerCommand      = ""
 	ignoreAddressChange = false
+	ignoreNamesChange   = false
 )
 
 func die(format string, a ...interface{}) {
@@ -77,9 +78,12 @@ func init() {
 	flag.StringVar(&testDataFile, "test-data", testDataFile, "Used for testing purposes, load test data from a JSON file.")
 
 	flag.StringVar(&monitorPeriodString, "monitor", monitorPeriodString, "If specified will monitor for changes with the specified period.")
+
 	flag.StringVar(&monitorPath, "changes", monitorPath, "Base path to save changes files into.")
 	flag.BoolVar(&keepChanges, "keep-changes", keepChanges, "Do not remove changes JSON files.")
+
 	flag.BoolVar(&ignoreAddressChange, "ignore-ip-changes", ignoreAddressChange, "Do not trigger for IP address changes.")
+	flag.BoolVar(&ignoreNamesChange, "ignore-host-changes", ignoreNamesChange, "Do not trigger for hostname changes.")
 	flag.StringVar(&triggerCommand, "trigger", triggerCommand, "Command to run when in monitor mode and one or more domains changed.")
 }
 

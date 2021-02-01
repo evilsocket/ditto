@@ -82,11 +82,9 @@ func printEntries() {
 	}
 }
 
-func printDeltas(deltas entryDeltas) {
-	numChangedEntries := len(deltas.Deltas)
+func printChanges(event Event) {
+	numChangedEntries := len(event.Changes)
 	if numChangedEntries > 0 {
-		// TODO: trigger logic
-
 		if !silent && !quiet {
 			fmt.Printf("\n\n")
 
@@ -95,9 +93,13 @@ func printDeltas(deltas entryDeltas) {
 				plural = "s"
 			}
 
-			fmt.Printf("%s - %d record%s changed:\n\n", deltas.CheckedAt, numChangedEntries, plural)
+			fmt.Printf("%s - %d record%s changed (attributes: %s)\n\n",
+				event.CheckedAt,
+				numChangedEntries,
+				plural,
+				event.Attributes())
 
-			for _, d := range deltas.Deltas {
+			for _, d := range event.Changes {
 				printEntry(d.New)
 			}
 		}
