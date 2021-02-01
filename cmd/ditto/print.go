@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/evilsocket/islazy/tui"
 	"strings"
+	"time"
 )
 
 func asString(entry *Entry) string {
@@ -86,8 +87,6 @@ func printChanges(event Event) {
 	numChangedEntries := len(event.Changes)
 	if numChangedEntries > 0 {
 		if !silent && !quiet {
-			fmt.Printf("\n\n")
-
 			plural := ""
 			if numChangedEntries > 1 {
 				plural = "s"
@@ -100,10 +99,13 @@ func printChanges(event Event) {
 				strings.Join(event.Attributes(), ", "))
 
 			for _, d := range event.Changes {
+				fmt.Printf("  ")
 				printEntry(d.New)
 			}
+
+			fmt.Printf("\n")
 		}
 	} else if !silent && !quiet {
-		fmt.Printf("no changes detected in the last %s\n", monitorPeriod)
+		fmt.Printf("%s - no changes detected in the last %s\n", time.Now(), monitorPeriod)
 	}
 }
