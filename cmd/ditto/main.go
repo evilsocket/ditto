@@ -40,6 +40,7 @@ var (
 	ignoreAddressChange = false
 	ignoreNamesChange   = false
 	noProgressBar       = false
+	swarmMode           = false
 )
 
 func die(format string, a ...interface{}) {
@@ -74,6 +75,10 @@ func init() {
 	flag.StringVar(&triggerCommand, "trigger", triggerCommand, "Command to run when in monitor mode and one or more domains changed.")
 
 	flag.BoolVar(&noProgressBar, "no-progress-bar", noProgressBar, "Do not show the progress bar.")
+
+	flag.BoolVar(&swarmMode, "swarm", swarmMode,
+		"In swarm mode -domain will be parsed as a comma separated list of domains and a ditto process will be"+
+			" spawned for each one, copying the arguments of the main process.")
 }
 
 func main() {
@@ -97,6 +102,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if swarmMode {
+		swarmMain()
+		return
+	}
+
 	// the tld library requires the schema or it won't parse the domain ¯\_(ツ)_/¯
 	if !strings.Contains(url, "://") {
 		url = fmt.Sprintf("https://%s", url)
@@ -104,7 +114,7 @@ func main() {
 
 	parsed, err = tld.Parse(url)
 	if err != nil {
-		die("%v\n", err)
+		die("could not parse '%s': %v\n", url, err)
 	} else if parsed.Domain == "" {
 		die("could not parse %s\n", url)
 	}
