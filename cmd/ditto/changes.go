@@ -47,16 +47,89 @@ func (e Event) Attributes() []string {
 	return list
 }
 
-// use json to avoid checking pointers and comparing
-// field by fielnd
-func sameWhois(a, b *whoisparser.WhoisInfo) bool {
-	if rawA, err := json.Marshal(a); err != nil {
-		return false
-	} else if rawB, err := json.Marshal(b); err != nil {
-		return false
-	} else {
-		return bytes.Equal(rawA, rawB)
+func structCompare(a, b interface{}) (bool, string) {
+	va := reflect.ValueOf(a)
+	vb := reflect.ValueOf(b)
+	nFieldsA := va.NumField()
+	nFieldsB := vb.NumField()
+
+	if nFieldsA != nFieldsB {
+		return true, "num_fields"
 	}
+
+	for i := 0; i < nFieldsA; i++ {
+		fieldA := va.Type().Field(i)
+		fieldB := vb.Type().Field(i)
+		if fieldA.Name != fieldB.Name {
+			return true, fieldA.Name
+		}
+
+		fieldName := strings.ToLower(fieldA.Name)
+
+		fieldValueA := va.Field(i)
+		fieldValueB := vb.Field(i)
+
+		if fieldValueA.Type() != fieldValueB.Type() {
+			return true, fmt.Sprintf("%s.type", fieldName)
+		}
+
+		// same index, same name, same type, now let's check the value
+		if reflect.DeepEqual(fieldValueA.Interface(), fieldValueB.Interface()) == false {
+			return true, fieldName
+		}
+	}
+
+	return false, ""
+}
+
+func contactCompare(a, b *whoisparser.Contact, prefix string) (bool, string) {
+	if a == nil && b != nil {
+		return true, prefix
+	} else if a != nil && b == nil {
+		return true, prefix
+	} else if a == nil && b == nil {
+		return false, ""
+	}
+
+	if changed, field := structCompare(*a, *b); changed {
+		return true, fmt.Sprintf("%s.%s", prefix, field)
+	}
+
+	return false, ""
+}
+
+func whoisCompare(a, b *whoisparser.WhoisInfo) (bool, string) {
+	if a == nil && b != nil {
+		return true, "whois"
+	} else if a != nil && b == nil {
+		return true, "whois"
+	} else if a == nil && b == nil {
+		return false, ""
+	}
+
+	if a.Domain == nil && b.Domain != nil {
+		return true, "whois.domain"
+	} else if a.Domain != nil && b.Domain == nil {
+		return true, "whois.domain"
+	} else if a.Domain != nil && b.Domain != nil {
+		if changed, field := structCompare(*a.Domain, *b.Domain); changed {
+			return true, fmt.Sprintf("whois.domain.%s", field)
+		}
+	}
+
+	if changed, what := contactCompare(a.Registrar, b.Registrar, "whois.registrar"); changed {
+		return true, what
+	} else if changed, what = contactCompare(a.Registrant, b.Registrant, "whois.registrant"); changed {
+		return true, what
+	} else if changed, what = contactCompare(a.Administrative, b.Administrative, "whois.administrative"); changed {
+		return true, what
+	} else if changed, what = contactCompare(a.Billing, b.Billing, "whois.billing"); changed {
+		return true, what
+	} else if changed, what = contactCompare(a.Technical, b.Technical, "whois.technical"); changed {
+		return true, what
+	}
+
+	return false, ""
 }
 
 func checkChanges() Event {
@@ -92,8 +165,8 @@ func checkChanges() Event {
 
 		}
 
-		if sameWhois(prev.Whois, curr.Whois) == false {
-			d.Attributes = append(d.Attributes, "whois")
+		if changed, what := whoisCompare(prev.Whois, curr.Whois); changed {
+			d.Attributes = append(d.Attributes, what)
 		}
 
 		if len(d.Attributes) > 0 {

@@ -93,11 +93,11 @@ func printChanges(event Event) {
 				plural = "s"
 			}
 
-			fmt.Printf("%s - %d record%s changed (attributes: %s)\n\n",
+			fmt.Printf("%s - %d record%s changed (%s)\n\n",
 				event.CheckedAt,
 				numChangedEntries,
 				plural,
-				event.Attributes())
+				strings.Join(event.Attributes(), ", "))
 
 			for _, d := range event.Changes {
 				printEntry(d.New)
