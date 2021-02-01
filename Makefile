@@ -12,6 +12,7 @@ _build:
 install:
 	@go install ./cmd/ditto
 	@cp service.sh ${GOPATH}/bin/ditto-service
+	@cp send-email-report.sh ${GOPATH}/bin/ditto-send-email-report
 
 docker:
 	@docker build -t evilsocket/ditto:latest .

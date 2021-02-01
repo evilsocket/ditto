@@ -18,7 +18,7 @@ import (
 )
 
 type Change struct {
-	Attributes []string `json:"changes"`
+	Attributes []string `json:"what_changed"`
 	Old        *Entry   `json:"before"`
 	New        *Entry   `json:"after"`
 }
@@ -233,7 +233,7 @@ func monitorDeltas() {
 			}
 
 			if doTrigger {
-				fmt.Printf("running trigger ...")
+				fmt.Printf("running trigger ...\n")
 				tpl, err := template.New("changes").Parse(triggerCommand)
 				if err != nil {
 					die("error parsing trigger command: %v\n", err)
