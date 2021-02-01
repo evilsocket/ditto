@@ -5,6 +5,7 @@ import (
 	"fmt"
 	pb "github.com/cheggaaa/pb/v3"
 	"github.com/evilsocket/islazy/async"
+	"github.com/evilsocket/islazy/fs"
 	tld "github.com/jpillora/go-tld"
 	"golang.org/x/net/idna"
 	"os"
@@ -111,6 +112,12 @@ func main() {
 	if monitorPeriodString != "" {
 		if monitorPeriod, err = time.ParseDuration(monitorPeriodString); err != nil {
 			die("could not parse period '%s': %v\n", monitorPeriodString, err)
+		}
+
+		if !fs.Exists(monitorPath) {
+			if err = os.MkdirAll(monitorPath, os.ModePerm); err != nil {
+				die("could not create '%s': %v\n", monitorPath, err)
+			}
 		}
 	}
 
